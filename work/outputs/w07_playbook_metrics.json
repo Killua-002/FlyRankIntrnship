@@ -1,0 +1,22 @@
+{
+  "snapshot_base_rate": 0.542,
+  "total_rows": 30000,
+  "queue_size": 19308,
+  "n_clients": 32,
+  "archetype_counts": {
+    "no_action": 10692,
+    "high_value_ctr_gap": 8187,
+    "declining_low_ctr_signal": 5938,
+    "ctr_gap_stable": 5179,
+    "stale_but_visible": 4
+  },
+  "archetype_decline_rate": {
+    "ctr_gap_stable": 0.547,
+    "declining_low_ctr_signal": 0.599,
+    "high_value_ctr_gap": 0.685,
+    "no_action": 0.399,
+    "stale_but_visible": 1.0
+  },
+  "model_validation_source": "w06_validation_audit.ipynb: client-grouped precision@20=0.850, precision@50=0.660",
+  "scoring_method": "GroupKFold(n_splits=5) out-of-fold predict_proba, grouped by client_id"
+}
