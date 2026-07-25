@@ -242,7 +242,9 @@
         random split on the same data reports a misleadingly higher 0.880, a ~0.22 point gap
         this report treats as a finding in its own right. <strong>What it's for:</strong> a
         ranked, reason-coded review queue for a content editor, with an explicit no-go list for
-        what should never be automated.
+        what should never be automated — the same triage problem every content team running a
+        multi-client portfolio hits every sprint, worked end to end on real (anonymized) search
+        performance data.
       </div>
     </div>
   </section>
@@ -251,15 +253,20 @@
     <div class="sec-num">01</div>
     <div class="sec-body">
       <h2>Introduction</h2>
-      <p class="lede">A content team can't review every page every week. Someone has to decide
-        which pages get an hour of attention first — and getting that wrong has a real,
-        asymmetric cost.</p>
-      <p>Flagging a healthy page for review costs an editor an hour on the wrong page: annoying,
-        but cheap. Missing a page that's genuinely declining, with real demand behind it, costs
-        traffic that keeps compounding the longer it goes unnoticed. That asymmetry is the whole
-        reason this project optimizes <em>precision at the top of a ranked list</em> rather than
-        overall accuracy — and the reason it's worth checking whether a learned model actually
-        earns its complexity over a rule a human can read in one line.</p>
+      <p class="lede">This is the actual triage problem behind FlyRank's Refresh / Content
+        Opportunity Scoring work: a content team managing many clients' page inventories at once
+        can't manually review every page every sprint. Someone — usually one editor with a few
+        spare hours — has to decide which pages get attention first, across portfolios that can
+        run into the tens of thousands of pages per client.</p>
+      <p>Getting that wrong has a real, asymmetric cost, and it's the same cost structure FlyRank's
+        own editors face. Flagging a healthy page for review costs an editor an hour on the wrong
+        page: annoying, but cheap. Missing a page that's genuinely declining, with real demand
+        behind it, costs traffic that keeps compounding the longer it goes unnoticed — and by the
+        time it shows up in a monthly report, the cheap fix window has often already closed. That
+        asymmetry is the whole reason this project optimizes <em>precision at the top of a ranked
+        list</em> rather than overall accuracy, and the reason it's worth checking whether a
+        learned model actually earns its complexity over a rule a human can read in one line
+        before recommending either one for real editorial use.</p>
     </div>
   </section>
 
