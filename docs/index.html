@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which Pages Decline First? — A Content Opportunity Scoring Study</title>
+<meta name="description" content="A validated model for ranking which content pages to review first, built on real anonymized search performance data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #12161C;
+    --paper: #F3F1EC;
+    --paper-dim: #E8E5DD;
+    --line: #D8D4C9;
+    --text: #23282F;
+    --text-dim: #5A6069;
+    --decline: #B84A3A;
+    --grow: #3E7A5C;
+    --signal: #C98A2C;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Fraunces', serif;
+    --sans: 'Inter', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    font-size: 17px;
+  }
+  a { color: var(--decline); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---- Header / hero ---- */
+  header.hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 72px 0 56px;
+    border-bottom: 6px solid var(--signal);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 18px;
+  }
+  h1.title {
+    font-family: var(--serif);
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.08;
+    margin: 0 0 22px;
+    max-width: 14ch;
+  }
+  .subtitle {
+    font-size: 1.15rem;
+    color: #C7CAD1;
+    max-width: 56ch;
+    margin: 0 0 28px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid #333A44;
+  }
+  .stat { min-width: 120px; }
+  .stat .num {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--paper);
+  }
+  .stat .label {
+    font-size: 0.82rem;
+    color: #9AA0AA;
+    margin-top: 2px;
+  }
+
+  /* ---- Layout: numbered sections ---- */
+  main { padding: 8px 0 40px; }
+  section.block {
+    padding: 52px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 8px 28px;
+  }
+  section.block:last-of-type { border-bottom: none; }
+  .sec-num {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    padding-top: 6px;
+  }
+  .sec-body h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.7rem;
+    margin: 0 0 18px;
+    color: var(--ink);
+  }
+  .sec-body p { margin: 0 0 16px; color: var(--text); }
+  .sec-body p.lede { font-size: 1.08rem; color: var(--text); }
+  .sec-body ul { margin: 0 0 16px; padding-left: 20px; }
+  .sec-body li { margin-bottom: 8px; }
+
+  /* ---- Abstract card ---- */
+  .abstract {
+    background: var(--paper-dim);
+    border-left: 4px solid var(--signal);
+    padding: 24px 28px;
+    margin: 0 0 8px;
+    font-size: 1.02rem;
+  }
+  .abstract strong { color: var(--ink); }
+
+  /* ---- Tables ---- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    margin: 8px 0 20px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+  tr.highlight td { background: #FBF0DE; font-weight: 600; }
+  td.decline { color: var(--decline); font-weight: 600; }
+  td.grow { color: var(--grow); font-weight: 600; }
+
+  /* ---- Charts ---- */
+  figure {
+    margin: 20px 0 8px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px;
+  }
+  figure img { width: 100%; display: block; border-radius: 2px; }
+  figcaption {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    padding: 10px 4px 2px;
+  }
+
+  /* ---- Callout / tension ---- */
+  .callout {
+    background: #FBEAE6;
+    border: 1px solid #E7C4BB;
+    border-radius: 4px;
+    padding: 18px 22px;
+    margin: 8px 0 20px;
+  }
+  .callout.good { background: #E9F2EC; border-color: #C6DECD; }
+  .callout p { margin: 0; }
+
+  /* ---- Reason code chips ---- */
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin: 2px 4px 2px 0;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    background: var(--ink);
+    color: #9AA0AA;
+    padding: 40px 0 48px;
+    font-size: 0.92rem;
+  }
+  footer a { color: var(--signal); }
+  footer .credit {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #333A44;
+  }
+
+  @media (max-width: 640px) {
+    section.block { grid-template-columns: 1fr; }
+    .sec-num { padding-top: 0; }
+    .hero-stats { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Research Report · FlyRank ML Internship Capstone</div>
+    <h1 class="title">Which Pages Decline First?</h1>
+    <p class="subtitle">A validated content-opportunity scoring model, built and honestly
+      evaluated on real anonymized search performance data — and what it took to trust the
+      number.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="num">30,000</div><div class="label">pages scored</div></div>
+      <div class="stat"><div class="num">32</div><div class="label">clients</div></div>
+      <div class="stat"><div class="num">0.660</div><div class="label">precision@50 (honest split)</div></div>
+      <div class="stat"><div class="num">4</div><div class="label">action archetypes</div></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="block">
+    <div class="sec-num">Abstract</div>
+    <div class="sec-body">
+      <div class="abstract">
+        <strong>Question:</strong> given a client's full page inventory, which pages should a
+        content editor review first? <strong>Data:</strong> 30,000 anonymized content pages
+        across 32 clients, trailing 90-day search performance. <strong>Method:</strong> a
+        transparent CTR-vs-position baseline rule, checked against real signal data before being
+        built, compared against a Random Forest classifier under a client-grouped holdout split.
+        <strong>Result:</strong> the model reaches precision@50 of 0.660 against a 0.517 test
+        base rate — beating the baseline (0.540) and a naive dummy floor (0.580) — but a plain
+        random split on the same data reports a misleadingly higher 0.880, a ~0.22 point gap
+        this report treats as a finding in its own right. <strong>What it's for:</strong> a
+        ranked, reason-coded review queue for a content editor, with an explicit no-go list for
+        what should never be automated.
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-num">01</div>
+    <div class="sec-body">
+      <h2>Introduction</h2>
+      <p class="lede">A content team can't review every page every week. Someone has to decide
+        which pages get an hour of attention first — and getting that wrong has a real,
+        asymmetric cost.</p>
+      <p>Flagging a healthy page for review costs an editor an hour on the wrong page: annoying,
+        but cheap. Missing a page that's genuinely declining, with real demand behind it, costs
+        traffic that keeps compounding the longer it goes unnoticed. That asymmetry is the whole
+        reason this project optimizes <em>precision at the top of a ranked list</em> rather than
+        overall accuracy — and the reason it's worth checking whether a learned model actually
+        earns its complexity over a rule a human can read in one line.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-num">02</div>
+    <div class="sec-body">
+      <h2>Data</h2>
+      <p>This study uses the anonymized FlyRank ML Internship starter release: 30,000
+        pseudonymized content rows across 32 clients, one snapshot, with trailing-90-day search
+        performance aggregates and static content metadata.</p>
+      <p><strong>Fields used as features:</strong> content age, days since last update, 90-day
+        impressions, average position, click-through rate, word count, and engagement rate — all
+        observable before any editorial decision is made.</p>
+      <div class="callout">
+        <p><strong>Deliberately excluded: the exact percentage the label is computed from.</strong>
+        The label used throughout this study is derived from a 30-day-vs-previous-30-day
+        impression comparison. Including that raw percentage as a feature would hand the model
+        the answer — this isn't a theoretical risk, it's demonstrated directly in Section 4.</p>
+      </div>
+      <p>No client names, domains, raw search queries, or product/decision flags appear anywhere
+        in this dataset, this report, or the underlying repository — IDs are opaque pseudonyms
+        used only to group rows for a fair train/test split, never as model inputs.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-num">03</div>
+    <div class="sec-body">
+      <h2>Methodology</h2>
+      <p><strong>Baseline, checked before it was trusted.</strong> Two candidate signals were
+        tested against real data before either was built into a rule. Staleness — the signal
+        behind refresh flags — came back <strong>mixed</strong>: decline rate barely moved across
+        staleness buckets (0.47–0.61 against a 0.542 base rate). CTR-vs-position — the signal
+        behind CTR-fix logic — came back <strong>confirmed</strong>: weighted click-through rate
+        drops sharply from 0.355 at page one to 0.055 in deep results, with solid sample sizes
+        per tier. The baseline rule is built on the confirmed signal only.</p>
+      <table>
+        <tr><th>Rule</th><td colspan="2"><code>score = (expected CTR for position tier − actual CTR) × impressions</code></td></tr>
+      </table>
+      <p><strong>Model.</strong> A Random Forest classifier (300 trees, balanced class weights),
+        chosen because this is fundamentally a ranking/scoring problem — "which pages first" —
+        implemented via a classifier's probability output read as a priority score.</p>
+      <p><strong>Validation design.</strong> Rows are split by client (<code>GroupShuffleSplit</code>,
+        75/25), not at random. A page's client is a strong hidden signal — its typical traffic
+        tier, niche, and update cadence — and a random split would let that leak across train
+        and test. Section 4 shows exactly how much that would have inflated the result.</p>
+      <p><strong>Leakage check.</strong> The excluded percentage from Section 2 was deliberately
+        added back in as a feature to confirm the exclusion actually matters: precision@50 jumps
+        to a clean 1.000. That's the confession — proof the feature really does leak the answer,
+        and proof the evaluation harness would catch it if it happened by accident.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-num">04</div>
+    <div class="sec-body">
+      <h2>Results</h2>
+      <p>All three methods scored on the same held-out rows — 7,115 pages from 8 clients the
+        model never trained on — at the same metric.</p>
+      <table>
+        <tr><th>Method</th><th>Precision@20</th><th>Precision@50</th></tr>
+        <tr><td>Baseline (rule)</td><td>0.400</td><td>0.540</td></tr>
+        <tr><td>Dummy (stratified)</td><td>0.550</td><td>0.580</td></tr>
+        <tr class="highlight"><td>Random Forest</td><td>0.850</td><td>0.660</td></tr>
+      </table>
+      <figure>
+        <img src="img/results_vs_baseline.png" alt="Bar chart comparing precision@20 and precision@50 across baseline, dummy, and random forest methods, with the test base rate shown as a reference line.">
+        <figcaption>The model clears both the baseline and the dummy floor at both K, on a client-grouped holdout the model never saw during training.</figcaption>
+      </figure>
+      <p>Test-set base rate is 0.517 — read every precision number against that, not in
+        isolation. Precision@50 of 0.660 means roughly 33 of the top 50 flagged pages are
+        genuinely declining by this study's label, on clients the model had never seen.</p>
+
+      <div class="callout">
+        <p><strong>The split changes the number more than the model does.</strong> The same
+        model, scored on a plain random row split instead of the client-grouped one, reports
+        precision@50 of <strong>0.880</strong> — a full 0.22 higher than the honest number. That
+        gap is a rough estimate of how much of the random-split score was the model recognizing
+        <em>which client</em> a row belonged to, rather than genuinely reading decline.</p>
+      </div>
+      <figure>
+        <img src="img/split_honesty_gap.png" alt="Bar chart showing precision at 50 dropping from 0.88 under a random split to 0.66 under a client-grouped split.">
+        <figcaption>0.660 — not 0.880 — is the number this report stands behind.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-num">05</div>
+    <div class="sec-body">
+      <h2>Limitations &amp; honest framing</h2>
+      <ul>
+        <li><strong>Proxy label, not an observed outcome.</strong> The decline label is a rule
+          computed from the current window, not something that happened in the future. This
+          study says pages <em>look</em> declining by this definition — never that they
+          <em>will</em> decline.</li>
+        <li><strong>One snapshot, 8 held-out clients.</strong> Every precision number above comes
+          from a single split of a 32-client panel — directional, not precise to the third
+          decimal, and silent on any client outside this data.</li>
+        <li><strong>Observational, not causal.</strong> Nothing here supports "refreshing a page
+          will increase its traffic" — that requires a controlled experiment this study doesn't
+          run. The honest form is decision-support: <em>this page looks worth reviewing first,
+          because…</em></li>
+        <li><strong>The model may partly learn "weak page" rather than "declining page."</strong>
+          Error analysis found false positives clustering among pages with poor position and
+          near-zero CTR that are actually trending stable or up — a real, named failure mode.</li>
+        <li>No claim anywhere in this study concerns Google's ranking algorithm. Every finding is
+          scoped to this portfolio's own observed search performance.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-num">06</div>
+    <div class="sec-body">
+      <h2>Ranked recommendations</h2>
+      <p>The validated model, scored honestly for every row with out-of-fold predictions
+        (grouped by client, so no row is ever scored by a model that trained on it), combines
+        with the baseline signal into four archetypes:</p>
+      <table>
+        <tr><th>Archetype</th><th>Action</th><th>Decline rate</th></tr>
+        <tr><td><span class="chip">high_value_ctr_gap</span></td><td>Review meta &amp; snippet</td><td class="decline">0.685</td></tr>
+        <tr><td><span class="chip">declining_low_ctr_signal</span></td><td>Content refresh review</td><td class="decline">0.599</td></tr>
+        <tr><td><span class="chip">ctr_gap_stable</span></td><td>Monitor</td><td>0.547</td></tr>
+        <tr><td><span class="chip">stale_but_visible</span></td><td>Manual review</td><td>1.000 (n=4 — too small to trust)</td></tr>
+        <tr><td><span class="chip">no_action</span></td><td>—</td><td class="grow">0.399</td></tr>
+      </table>
+      <figure>
+        <img src="img/archetype_decline_rates.png" alt="Bar chart of observed decline rate by archetype, compared against the portfolio base rate, with sample size labeled on each bar.">
+        <figcaption>Every archetype with a meaningful sample size separates cleanly from the 0.542 portfolio base rate.</figcaption>
+      </figure>
+      <div class="callout good">
+        <p><strong>What should never be automated:</strong> nothing in this queue triggers a
+        content change on its own. Every entry is a recommendation to review, with a human check
+        required before acting — including checking whether a CTR gap is actually caused by a
+        competitor's rich result rather than a fixable title, and whether a flagged page is
+        already recovering on its own.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-num">07</div>
+    <div class="sec-body">
+      <h2>Reproducibility</h2>
+      <p>Every number on this page is generated by <code>work/notebooks/capstone.ipynb</code> in
+        the linked repository, with a fixed random seed (42) throughout.</p>
+      <ul>
+        <li><a href="https://github.com/Killua-002/FlyRankIntrnship.git">Full repository →</a></li>
+        <li><a href="https://github.com/Killua-002/FlyRankIntrnship/blob/main/work/notebooks/capstone.ipynb">capstone.ipynb →</a></li>
+        <li>All weekly notebooks (<code>work/notebooks/w01</code>–<code>w07</code>) documenting
+          each step this study consolidates, from research question to action playbook.</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Built by Abdullah Hany Ahmed an intern in the FlyRank ML Internship — Refresh / Content Opportunity Scoring
+      lane. This is a public-safe, observational research report; see Limitations above for what
+      it does and does not claim.</p>
+    <div class="credit">
+      Built on the FlyRank ML Internship dataset — <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

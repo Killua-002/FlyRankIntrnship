@@ -1,0 +1,50 @@
+{
+  "n_rows": 30000,
+  "n_clients": 32,
+  "base_rate": 0.542,
+  "test_n": 7115,
+  "test_n_clients": 8,
+  "test_base_rate": 0.517,
+  "results": {
+    "baseline (rule)": {
+      "precision@20": 0.4,
+      "precision@50": 0.54
+    },
+    "dummy (stratified)": {
+      "precision@20": 0.55,
+      "precision@50": 0.58
+    },
+    "random forest": {
+      "precision@20": 0.85,
+      "precision@50": 0.66
+    }
+  },
+  "random_split_p50": 0.88,
+  "grouped_split_p50": 0.66,
+  "leaky_p50": 1.0,
+  "feature_importances": {
+    "content_age_days": 0.156,
+    "days_since_last_update": 0.037,
+    "impressions_90d": 0.256,
+    "avg_position": 0.233,
+    "ctr": 0.111,
+    "word_count": 0.145,
+    "engagement_rate": 0.063
+  },
+  "queue_size": 19308,
+  "archetype_counts": {
+    "no_action": 10692,
+    "high_value_ctr_gap": 8187,
+    "declining_low_ctr_signal": 5938,
+    "ctr_gap_stable": 5179,
+    "stale_but_visible": 4
+  },
+  "archetype_decline_rate": {
+    "ctr_gap_stable": 0.547,
+    "declining_low_ctr_signal": 0.599,
+    "high_value_ctr_gap": 0.685,
+    "no_action": 0.399,
+    "stale_but_visible": 1.0
+  },
+  "seed": 42
+}
